@@ -1,0 +1,17 @@
+{
+  "name": "petrsladek/gcm",
+  "description": "Google Cloud Messaging PHP library. Sender for sending Messages over HTTP amd Deamon for sending and recieving messages over XMPP (CCS).",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Petr Sladek",
+      "email": "petr.sladek@skaut.cz"
+    }
+  ],
+  "require": {
+    "php": ">= 5.3.7",
+    "nette/utils": "~2.2.0",
+    "abhinavsingh/jaxl": "3.0.0"
+  }
+}
