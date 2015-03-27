@@ -61,9 +61,9 @@ class Deamon extends \Nette\Object {
         ));
 
         // Catch signal
-        pcntl_signal(SIGINT, function($signal) { $this->stop(); });
-        pcntl_signal(SIGKILL, function($signal) { $this->stop(); });
-        pcntl_signal(SIGTERM, function($signal) { $this->stop(); });
+//        \pcntl_signal(SIGINT, function($signal) { $this->stop(); });
+//        \pcntl_signal(SIGKILL, function($signal) { $this->stop(); });
+//        \pcntl_signal(SIGTERM, function($signal) { $this->stop(); });
 
 
 //        $this->client->add_cb('on_stream_start', function() {
