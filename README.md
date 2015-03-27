@@ -26,6 +26,7 @@ var_dump($response);
 
 
 ### XMPP Deamon recieving message
+```php
 use Gcm\Xmpp\Deamon;
 
 $deamon = new Deamon;
@@ -49,8 +50,11 @@ $deamon->onMessage[] = function(Deamon $deamon, \Gcm\RecievedMessage $message) {
 
 
 $deamon->run(); // running until call $deamon->stop() or kill process;
+```
+
 
 ### XMPP Deamon sending messages
+```php
 use Gcm\Xmpp\Deamon;
 use Gcm\Message;
 
@@ -86,3 +90,4 @@ $deamon->onAllSent[] = function(Deamon $deamon, $countMessages) {
 };
 
 $deamon->run(); // Start sending messaging
+```
