@@ -13,5 +13,8 @@
     "php": ">= 5.3.7",
     "nette/utils": "~2.2.0",
     "abhinavsingh/jaxl": "3.0.0"
+  },
+  "autoload": {
+    "classmap": ["src/"]
   }
 }
