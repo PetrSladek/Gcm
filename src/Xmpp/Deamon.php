@@ -60,7 +60,10 @@ class Deamon extends \Nette\Object {
 //            'log_level' => JAXL_DEBUG
         ));
 
-
+        // Catch signal
+        pcntl_signal(SIGTERM, function($signal) {
+            $this->stop();
+        });
 
 //        $this->client->add_cb('on_stream_start', function() {
 //            $this->onConnect($this);
