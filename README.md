@@ -4,7 +4,14 @@ Google Cloud Messaging PHP library. Gcm\Http\Sender for sending Messages over HT
 ## Dependencies
 - Nette/Utils ~2.2.0
 - JAXL 3.0.0
- 
+
+## Install
+
+Best way is [Composer](http://getcomposer.org/):
+
+```sh
+$ composer require petrsladek/gcm:dev-master
+```
 
 ## Usage
 
