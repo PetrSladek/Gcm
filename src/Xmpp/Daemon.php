@@ -12,7 +12,7 @@ use Gcm\RecievedMessage;
 use Gcm\Xmpp\Jaxl\Jaxl;
 
 
-class Deamon extends \Nette\Object {
+class Daemon extends \Nette\Object {
 
     //Production server and port
     const HOST = "gcm.googleapis.com";
