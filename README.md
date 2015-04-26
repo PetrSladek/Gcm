@@ -36,7 +36,7 @@ var_dump($response);
 ```php
 use Gcm\Xmpp\Deamon;
 
-$deamon = new Deamon;
+$deamon = new Deamon(SENDER_ID, API_KEY, $testMode = false);;
 
 $deamon->onReady[] = function(Deamon $deamon) {
     print "Ready / Auth success. Waiting for Messages";
