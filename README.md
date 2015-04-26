@@ -66,7 +66,7 @@ use Gcm\Xmpp\Deamon;
 use Gcm\Message;
 
 
-$deamon = new Deamon;
+$deamon = new Deamon(SENDER_ID, API_KEY, $testMode = false);
 
 $deamon->onReady[] = function(Deamon $deamon) {
     print "Ready / Auth success. Waiting for Messages";
