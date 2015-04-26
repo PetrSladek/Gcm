@@ -4,7 +4,14 @@ Google Cloud Messaging PHP library. Gcm\Http\Sender for sending Messages over HT
 ## Dependencies
 - Nette/Utils ~2.2.0
 - JAXL 3.0.0
- 
+
+## Install
+
+Best way is [Composer](http://getcomposer.org/):
+
+```sh
+$ composer require petrsladek/gcm:dev-master
+```
 
 ## Usage
 
@@ -29,7 +36,7 @@ var_dump($response);
 ```php
 use Gcm\Xmpp\Deamon;
 
-$deamon = new Deamon;
+$deamon = new Deamon(SENDER_ID, API_KEY, $testMode = false);;
 
 $deamon->onReady[] = function(Deamon $deamon) {
     print "Ready / Auth success. Waiting for Messages";
@@ -59,7 +66,7 @@ use Gcm\Xmpp\Deamon;
 use Gcm\Message;
 
 
-$deamon = new Deamon;
+$deamon = new Deamon(SENDER_ID, API_KEY, $testMode = false);
 
 $deamon->onReady[] = function(Deamon $deamon) {
     print "Ready / Auth success. Waiting for Messages";
