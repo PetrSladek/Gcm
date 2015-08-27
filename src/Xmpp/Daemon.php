@@ -124,16 +124,16 @@ class Daemon extends \Nette\Object {
 
     public function send(Message $message) {
 
-        if(count($message->getRegistrationIds()) == 0)
+        if(count($message->getTo()) == 0)
             throw new RuntimeException("Recipient must set use");
-        if(count($message->getRegistrationIds()) > 1)
+        if(count($message->getTo()) > 1)
             throw new RuntimeException("Recipient must by only one");
 
 
         $this->sendGcmMessage([
                 'to' => $message->getTo(true),
                 'collapse_key' => $message->getCollapseKey(), // Could be unset
-                'time_to_live' => $message->getTtl(), //Could be unset
+                'time_to_live' => $message->getTimeToLive(), //Could be unset
                 'delay_while_idle' => $message->getDelayWhileIdle(), //Could be unset
                 'message_id' => (string) microtime(),
                 'data' => $message->getData(),
