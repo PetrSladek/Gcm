@@ -85,11 +85,17 @@ class Message
 
     public function __construct($toRegId = null, $data = null, $collapseKey = null)
     {
-        if(is_array($toRegId)) {
+        if(is_array($toRegId))
+        {
             foreach ($toRegId as $to)
+            {
                 $this->addTo($to);
-        } else
+            }
+        }
+        elseif($toRegId)
+        {
             $this->setTo($toRegId);
+        }
 
         $this->setData($data);
         $this->setCollapseKey($collapseKey);
@@ -113,7 +119,7 @@ class Message
     public function addTo($to)
     {
         if(!is_string($to))
-            throw new RuntimeException("Recipient must be string GCM Registration ID");
+            throw new WrongGcmIdException("Recipient must be string GCM Registration ID");
 
         $this->to[] = $to;
         return $this;

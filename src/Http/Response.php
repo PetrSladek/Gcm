@@ -7,6 +7,7 @@
 namespace Gcm\Http;
 
 use Gcm\Message;
+use Nette\Utils\Json;
 
 class Response
 {
@@ -56,9 +57,7 @@ class Response
 
     public function __construct(Message $message, $body)
     {
-        $data = json_decode($body, true);
-        if ($data === null)
-            throw new RuntimeException("Body is not JSON. $body");
+        $data = Json::decode($body);
 
         $this->multicastId = $data['multicast_id'];
         $this->failure = $data['failure'];

@@ -8,8 +8,11 @@ namespace Gcm\Xmpp;
 
 use Gcm\Http\RuntimeException;
 use Gcm\Message;
+use Gcm\NotRecipientException;
 use Gcm\RecievedMessage;
+use Gcm\TooManyRecipientsException;
 use Gcm\Xmpp\Jaxl\Jaxl;
+use Nette\Utils\Json;
 
 
 class Daemon extends \Nette\Object {
@@ -47,7 +50,8 @@ class Daemon extends \Nette\Object {
     protected $messagesSent = 0;
     protected $messagesAcked = 0;
 
-    public function __construct($senderId, $apiKey, $testMode = false) {
+    public function __construct($senderId, $apiKey, $testMode = false)
+    {
         $this->client = new Jaxl(array(
             'jid'=> "$senderId@gcm.googleapis.com",
             'pass'=> $apiKey,
@@ -57,30 +61,31 @@ class Daemon extends \Nette\Object {
             'port' => $testMode ? self::TEST_PORT : self::PORT,
             'strict' => false,
             'force_tls' => true,
-//            'log_level' => JAXL_DEBUG
         ));
 
         // Catch signal
-//        \pcntl_signal(SIGINT, function($signal) { $this->stop(); });
-//        \pcntl_signal(SIGKILL, function($signal) { $this->stop(); });
-//        \pcntl_signal(SIGTERM, function($signal) { $this->stop(); });
+        if (function_exists('pcntl_signal'))
+        {
+            pcntl_signal(SIGINT, function($signal) { $this->stop(); });
+            pcntl_signal(SIGKILL, function($signal) { $this->stop(); });
+            pcntl_signal(SIGTERM, function($signal) { $this->stop(); });
+        }
 
 
-//        $this->client->add_cb('on_stream_start', function() {
-//            $this->onConnect($this);
-//        });
         $this->client->add_cb('on_auth_success', function() {
             $this->onReady($this);
         });
+
         $this->client->add_cb('on_auth_failure', function($reason) {
             $this->onAuthFailure($this, $reason);
             $this->stop();
         });
+
         $this->client->add_cb('on_disconnect', function() {
             $this->onDisconnect($this);
         });
 
-        $this->client->add_cb("on_normal_message", function($stanza) { //on__message gcm xmpp protocol is a funny one
+        $this->client->add_cb("on_normal_message", function($stanza) {
             $data = $this->getDataFromStanza($stanza);
             $message = new RecievedMessage(@$data['category'], @$data['data'], @$data['time_to_live'], @$data['message_id'], @$data['from'] );
 
@@ -88,35 +93,48 @@ class Daemon extends \Nette\Object {
             $this->onMessage($this, $message);
         });
 
-        $this->client->add_cb("on__message", function($stanza){ //on__message gcm xmpp protocol is a funny one
+        $this->client->add_cb("on__message", function($stanza) { //on__message gcm xmpp protocol is a funny one
             $data = $this->getDataFromStanza($stanza);
             $messageType = $data['message_type'];
             $messageId = $data['message_id']; //message id which was sent by us
             $from = $data['from']; //gcm key;
 
-            if($messageType == 'nack'){
+            if ($messageType == 'nack')
+            {
                 $errorDescription = @$data['error_description']; //usually empty ...
                 $error = $data['error'];
                 $this->onSentError($this, $from, $messageId, $error, $errorDescription);
-            }else{ // ACK
+            }
+            else
+            { // ACK
                 $this->messagesAcked++;
 
                 $this->onSentSucces($this, $from, $messageId, $this->messagesAcked, $this->messagesSent);
 
-                if($this->messagesSent == $this->messagesAcked){
-//                    $this->client->send_end_stream();
+                if ($this->messagesSent == $this->messagesAcked)
+                {
                     $this->onAllSent($this, $this->messagesSent);
                 }
             }
-
         });
 
 
     }
-    public function run(){
+
+    /**
+     * Run daamon
+     * Daemon go unitl call stop() method
+     */
+    public function run()
+    {
         $this->client->start();
     }
-    public function stop() {
+
+    /**
+     * Stop daemon
+     */
+    public function stop()
+    {
         $this->onStop($this);
         $this->client->send_end_stream();
     }
@@ -124,11 +142,13 @@ class Daemon extends \Nette\Object {
 
     public function send(Message $message) {
 
-        if(count($message->getTo()) == 0)
-            throw new RuntimeException("Recipient must set use");
-        if(count($message->getTo()) > 1)
-            throw new RuntimeException("Recipient must by only one");
+        if(count($message->getTo()) == 0) {
+            throw new NotRecipientException("Recipient must set use");
+        }
 
+        if(count($message->getTo()) > 1) {
+            throw new TooManyRecipientsException("Recipient must by only one");
+        }
 
         $this->sendGcmMessage([
                 'to' => $message->getTo(true),
@@ -140,7 +160,12 @@ class Daemon extends \Nette\Object {
         ]);
     }
 
-    protected function sendAck(RecievedMessage $message) {
+    /**
+     * Send ack
+     * @param RecievedMessage $message
+     */
+    protected function sendAck(RecievedMessage $message)
+    {
         $this->sendGcmMessage([
             'to' => $message->getFrom(),
             'message_type' => 'ack',
@@ -148,23 +173,31 @@ class Daemon extends \Nette\Object {
         ]);
     }
 
-    protected function sendGcmMessage($payload) {
-        $message = '<message id=""><gcm xmlns="google:mobile:data">' . json_encode($payload) . '</gcm></message>';
+    /**
+     * Send GCM message
+     * @param mixed $payload
+     */
+    protected function sendGcmMessage($payload)
+    {
+        $message = '<message id=""><gcm xmlns="google:mobile:data">' . Json::encode($payload) . '</gcm></message>';
         $this->client->send_raw($message);
     }
 
-
+    /**
+     * @return Jaxl
+     */
     public function getXMPPClient()
     {
         return $this->client;
     }
 
     /**
-     * @param XMPPStanza $stanza
+     * @param \XMPPStanza $stanza
      * @return array data;
      */
-    protected function getDataFromStanza(\XMPPStanza $stanza) {
-        $data = json_decode(html_entity_decode($stanza->childrens[0]->text), true);
+    protected function getDataFromStanza(\XMPPStanza $stanza)
+    {
+        $data = Json::decode(html_entity_decode($stanza->childrens[0]->text));
         return $data;
     }
 

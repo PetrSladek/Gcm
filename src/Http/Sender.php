@@ -7,7 +7,12 @@
 namespace Gcm\Http;
 
 
+use Gcm\AuthenticationException;
+use Gcm\HttpException;
+use Gcm\IlegalApiKeyException;
 use Gcm\Message;
+use Gcm\TooBigPayloadException;
+use Gcm\TooManyRecipientsException;
 
 class Sender {
 
@@ -32,15 +37,20 @@ class Sender {
     {
 
         if (!$this->apiKey)
+        {
             throw new IlegalApiKeyException("Api Key is empty");
+        }
 
         if (count($message->getTo()) > 1000)
-            throw new RuntimeException("Recipients maximum is 1000 GCM Registration IDs");
+        {
+            throw new TooManyRecipientsException("Recipients maximum is 1000 GCM Registration IDs");
+        }
 
         $data = $this->getPayload($message);
-        if(!empty($data)) {
+        if(!empty($data))
+        {
             if (strlen($data) > 4096)
-                throw new RuntimeException("Data payload maximum is 4096 bytes");
+                throw new TooBigPayloadException("Data payload maximum is 4096 bytes");
         }
 
         $headers = array(
@@ -62,11 +72,17 @@ class Sender {
 
         curl_close($ch);
 
-        switch ($resultHttpCode) {
-            case "200": break; // its ok
-            case "400": throw new RuntimeException("HTTP Authentication Error [$resultHttpCode] $resultBody");
-            case "401": throw new RuntimeException("HTTP Authentication Error [$resultHttpCode] $resultBody");
-            default:    throw new RuntimeException("HTTP Error [$resultHttpCode] $resultBody");
+        switch ($resultHttpCode)
+        {
+            case "200":
+                break; // its ok
+
+            case "400":
+            case "401":
+                throw new AuthenticationException("HTTP Authentication Error", $resultHttpCode);
+
+            default:
+                throw new HttpException("HTTP Error", $resultHttpCode);
         }
 
         $response =  new Response($message, $resultBody);
