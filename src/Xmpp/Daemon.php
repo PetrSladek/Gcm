@@ -100,7 +100,7 @@ class Daemon extends \Nette\Object {
 			{ // ACK
 				$this->messagesAcked++;
 
-				$this->onSentSucces($this, $from, $messageId, $this->messagesAcked, $this->messagesSent);
+				$this->onSentSuccess($this, $from, $messageId, $this->messagesAcked, $this->messagesSent);
 
 				if ($this->messagesSent == $this->messagesAcked)
 				{
@@ -186,7 +186,7 @@ class Daemon extends \Nette\Object {
 	 */
 	protected function getDataFromStanza(\XMPPStanza $stanza)
 	{
-		$data = Json::decode(html_entity_decode($stanza->childrens[0]->text));
+		$data = Json::decode(html_entity_decode($stanza->childrens[0]->text), Json::FORCE_ARRAY);
 		return $data;
 	}
 
